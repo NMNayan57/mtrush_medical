@@ -21,46 +21,44 @@ M-TRUST is a bias detection and mitigation framework that wraps any medical AI m
 ```bash
 pip install mtrust-medical
 
+## 🚀 Usage Example
 
-⚡ Quick Check (30 seconds)
-Verify that M-TRUST is working with a dummy model.
-
-python
-Copy
-Edit
+```python
+# ==========================
+#  M-TRUST Quick & Full Demo
+# ==========================
 from mtrust import MTrustWrapper
 
-# Dummy model with simple predict()
+# ---------- QUICK CHECK ----------
+# Dummy model for fast verification
 class DummyModel:
     def predict(self, x): return [0.1, 0.2, 0.7]
 
-fair_model = MTrustWrapper(DummyModel())
-result = fair_model.predict("any_image.png", demographics={'race': 'Black'})
-print(result)
-🔬 Real Model Usage
-Example with a trained CheXNet-style DenseNet model:
+print("\n=== QUICK CHECK ===")
+fair_dummy = MTrustWrapper(DummyModel())
+result = fair_dummy.predict("any_image.png", demographics={'race': 'Black'})
+print("Quick check result:", result)
 
-python
-Copy
-Edit
+# ---------- REAL MODEL EXAMPLE ----------
 import torch
 import torchvision.models as models
 import torch.nn as nn
 from PIL import Image
 import torchvision.transforms as transforms
-from mtrust import MTrustWrapper
+
+print("\n=== REAL MODEL USAGE ===")
 
 # 1. Load model
 model = models.densenet121(pretrained=False)
 num_ftrs = model.classifier.in_features
 model.classifier = nn.Sequential(nn.Linear(num_ftrs, 14), nn.Sigmoid())
 
-# 2. Load weights
+# 2. Load weights (replace path with your .pth file)
 ckpt = torch.load("models/chexnet_model.pth", map_location="cpu")
 model.load_state_dict(ckpt['model_state_dict'] if 'model_state_dict' in ckpt else ckpt)
 model.eval()
 
-# 3. Preprocess image
+# 3. Image preprocessing
 transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -82,15 +80,9 @@ fair_model = MTrustWrapper(
     mitigation_strength='balanced'
 )
 
-# 5. Predict and report bias
+# 5. Predict & report bias
 result = fair_model.predict("data/sample_xray.png",
                             demographics={'age': 65, 'gender': 'F', 'race': 'Asian'})
-print(result)
-print(fair_model.get_bias_report())
-📂 More Examples
-examples/dummy_quick_check.py — Minimal example to verify install
+print("Prediction:", result)
+print("Bias report:", fair_model.get_bias_report())
 
-examples/test_mtrust_indiana.py — Example on Indiana dataset
-
-📑 Documentation
-Full API reference and usage guides will be available soon on our documentation site.
